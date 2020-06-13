@@ -8,9 +8,9 @@ from ContactUtils import LoadContactMatrix
 if __name__ == "__main__":
 
 	if len(sys.argv) != 4:
-    		print 'python CalcContactPredAccuracy.py pred_matrix_file distcb_matrix_file target'
-		print '      Both matrix files are text format with L lines and each line has L columns where L is the protein sequence length'
-    		exit(-1)
+		print('python CalcContactPredAccuracy.py pred_matrix_file distcb_matrix_file target')
+		print('      Both matrix files are text format with L lines and each line has L columns where L is the protein sequence length')
+		exit(-1)
 
 	predFile = sys.argv[1]
 	distcbFile = sys.argv[2]
@@ -23,7 +23,7 @@ if __name__ == "__main__":
 	accsStr = [ str(a) for a in accs ]
 	resultStr = target + ' ' + str(pred.shape[0]) + ' TopAcc '
 	resultStr += (' '.join(accsStr) )
-	print resultStr
+	print(resultStr)
 
 	## the below method does not yield a better result
 	##normalize prediction matrix

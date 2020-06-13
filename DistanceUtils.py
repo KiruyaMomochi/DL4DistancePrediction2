@@ -8,19 +8,19 @@ import config
 
 ## load the predicted distance matrix
 def LoadRawDistProbFile(file=None):
-		if file is None:
-				print('please provide a raw distance probability distribution file with suffix .predictedDistMatrix.pkl')
-				exit(1)
+	if file is None:
+		print('please provide a raw distance probability distribution file with suffix .predictedDistMatrix.pkl')
+		exit(1)
 
-		if not os.path.isfile(file):
-				print('The specified file does not exist: ', file)
-				exit(1)
+	if not os.path.isfile(file):
+		print('The specified file does not exist: ', file)
+		exit(1)
 
-		fh = open(file, 'rb')
-		content = cPickle.load(fh)
-		fh.close()
+	fh = open(file, 'rb')
+	content = cPickle.load(fh)
+	fh.close()
 
-		return content
+	return content
 
 ## bound is a dict() and bound['CbCb'] is a matrix with dimension L*L*10
 ## native is a dict(), native['CbCb'] is a 2D distance matrix
@@ -135,7 +135,7 @@ def MergeDistanceBins(srcProbMatrix, srcDistCutoff, dstDistCutoff):
 	positions = [ LabelsOfOneDistance(d+0.00001, srcDistCutoff) for d in dstDistCutoff ]
 
 	matrixList = []
-	for i in xrange(len(positions)-1 ):
+	for i in range(len(positions)-1 ):
 		start = positions[i]
 		end = positions[i+1]
 

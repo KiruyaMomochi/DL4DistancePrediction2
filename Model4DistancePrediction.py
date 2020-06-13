@@ -18,6 +18,8 @@ from DilatedResNet4Distance import DilatedResNet
 from utils import OuterConcatenate, MidpointFeature
 import DistanceUtils
 
+import pickle as cPickle
+
 from config import Response2LabelName, Response2LabelType
 
 ##this class calculates the convolution of 1D sequence and then convert it to a 2D matrix using OuterConcatenate
@@ -484,106 +486,106 @@ class ResNet4DistMatrix:
 		currentResponse = None
 		topRatio = 0.5
 
-	## in this function, we assume that pred is a tensor3 of floatX and truth is a matrix
-	## pred has shape (dataLen, dataLen, 2) and truth has shape (dataLen, dataLen)
-	## we also assume that label 0 is positive and label 1 is negative
+		## in this function, we assume that pred is a tensor3 of floatX and truth is a matrix
+		## pred has shape (dataLen, dataLen, 2) and truth has shape (dataLen, dataLen)
+		## we also assume that label 0 is positive and label 1 is negative
 
-	## the result is not 100% accurate for non-symmetric response, e.g., hydrogen-bonding matrix
-	def TopAccuracy2C(pred=None, truth=None, symmetric=False):
-		M1s = T.ones_like(truth, dtype=np.int8)
-		LRsel = T.triu(M1s, 24)
-		MLRsel = T.triu(M1s, 12)
-		SMLRsel = T.triu(M1s, 6)
-		MRsel = MLRsel - LRsel
-		SRsel = SMLRsel - MLRsel
+		## the result is not 100% accurate for non-symmetric response, e.g., hydrogen-bonding matrix
+		def TopAccuracy2C(pred=None, truth=None, symmetric=False):
+			M1s = T.ones_like(truth, dtype=np.int8)
+			LRsel = T.triu(M1s, 24)
+			MLRsel = T.triu(M1s, 12)
+			SMLRsel = T.triu(M1s, 6)
+			MRsel = MLRsel - LRsel
+			SRsel = SMLRsel - MLRsel
 
-		dataLen = truth.shape[0]
+			dataLen = truth.shape[0]
 
-		pred0 = pred[:,:,0]
+			pred0 = pred[:,:,0]
 
-		if symmetric:
-			avg_pred = (pred0 + pred0.dimshuffle(1, 0) )/2.0
-		else:
-			avg_pred = pred0
-
-		#pred_truth = T.concatenate( (avg_pred, truth.dimshuffle(0, 1, 'x') ), axis=2)
-		pred_truth = T.stack( [avg_pred, T.cast(truth, 'int32')], axis=2 )
-
-		accuracyList = []
-		for Rsel in [ LRsel, MRsel, MLRsel, SRsel]:
-			selected_pred_truth = pred_truth[Rsel.nonzero()]
-
-			## sort by the predicted value for label 0 from the largest to the smallest
-			selected_pred_truth_sorted = selected_pred_truth[ (selected_pred_truth[:,0]).argsort()[::-1] ]
-
-			#print 'topRatio =', topRatio
-			numTops = T.minimum( T.iround(dataLen * topRatio), selected_pred_truth_sorted.shape[0])
-
-			selected_sorted_truth = T.cast(selected_pred_truth_sorted[:, -1], 'int32')
-			numTruths = T.bincount(selected_sorted_truth, minlength=2 )
-			numCorrects = T.bincount( selected_sorted_truth[0:numTops], minlength=2 )
-			#numTops = T.minimum(numTops, numTruths[0])
-			accuracyList.append( T.stack( [numCorrects[0] *1./(numTops + 0.001), numTops, numTruths[0] ], axis=0)  )
-
-		return T.stacklists( accuracyList )
-
-	def TopAccuracyNormal(pred=None, truth=None, symmetric=True):
-		truth_new = T.ge(truth, config.ContactDefinition )
-		
-		if pred.ndim == 2:
-			pred_new = -pred.dimshuffle(0, 1, 'x')
-		else:
-			pred_new = -pred
-
-		return TopAccuracy2C(pred = pred_new, truth = truth_new, symmetric=symmetric)
-
-	def TopAccuracyLogNormal(pred=None, truth=None, symmetric=True):
-		truth_new = T.ge(truth, T.log(config.ContactDefinition) )
-		
-		if pred.ndim == 2:
-			pred_new = -pred.dimshuffle(0, 1, 'x')
-		else:
-			pred_new = -pred
-
-		return TopAccuracy2C(pred = pred_new, truth = truth_new, symmetric=symmetric)
-
-	## in this function, we assume that pred is tensor3 of float and truth is a matrix of int8 or int
-	## pred has shape (dataLen, dataLen, numLabels), having the predicted probability of each label
-	## truth has shape (dataLen, dataLen)
-	def TopAccuracyMultiC(pred=None, truth=None, subType=None, symmetric=True):
-		## convert pred and truth to 2C
-		distBins = config.distCutoffs[subType]
-		label8 = DistanceUtils.LabelsOfOneDistance(config.ContactDefinition, distBins)
-		label15 = DistanceUtils.LabelsOfOneDistance(config.InteractionLimit, distBins)
-		truth1 = T.cast( T.ge(truth, label8), 'int32')
-		truth_new = truth1
-		pred1 = T.sum(pred[:,:,:label8], axis=2, keepdims=True)
-		pred2 = T.sum(pred[:,:,label8:], axis=2, keepdims=True)
-		pred_new = T.concatenate( (pred1, pred2), axis=2)
-		return TopAccuracy2C(pred=pred_new, truth=truth_new, symmetric=symmetric)
-
-	##def EvaluateAccuracy(pred_prob, truth, pad_len, response):
-	def EvaluateAccuracy(pred_prob, truth, pad_len):
-		pred_in_correct_shape = T.cast( pred_prob[pad_len:, pad_len: ], dtype=theano.config.floatX)
-		truth_in_correct_shape = truth[pad_len:, pad_len: ]
-
-		labelType = Response2LabelType(currentResponse)
-		atomType = Response2LabelName(currentResponse)
-		symmetric = ( atomType in ['CaCa', 'CbCb', 'CgCg', 'Beta'] )
-
-		if labelType.startswith('LogNormal'):
-			return TopAccuracyLogNormal(pred=pred_in_correct_shape, truth=truth_in_correct_shape, symmetric=symmetric)
-		elif labelType.startswith('Normal'):
-			return TopAccuracyNormal(pred=pred_in_correct_shape, truth=truth_in_correct_shape, symmetric=symmetric)
-		elif labelType.startswith('Discrete'):
-			subType = labelType[len('Discrete'): ]
-			if subType.startswith('2C'):
-				return TopAccuracy2C(pred=pred_in_correct_shape, truth=truth_in_correct_shape, symmetric=symmetric)
+			if symmetric:
+				avg_pred = (pred0 + pred0.dimshuffle(1, 0) )/2.0
 			else:
-				return TopAccuracyMultiC(pred=pred_in_correct_shape, truth=truth_in_correct_shape, subType=subType, symmetric=symmetric)
-		else:
-			print('unsupported label type in EvaluateAccuracy: ', labelType)
-			exit(-1)
+				avg_pred = pred0
+
+			#pred_truth = T.concatenate( (avg_pred, truth.dimshuffle(0, 1, 'x') ), axis=2)
+			pred_truth = T.stack( [avg_pred, T.cast(truth, 'int32')], axis=2 )
+
+			accuracyList = []
+			for Rsel in [ LRsel, MRsel, MLRsel, SRsel]:
+				selected_pred_truth = pred_truth[Rsel.nonzero()]
+
+				## sort by the predicted value for label 0 from the largest to the smallest
+				selected_pred_truth_sorted = selected_pred_truth[ (selected_pred_truth[:,0]).argsort()[::-1] ]
+
+				#print 'topRatio =', topRatio
+				numTops = T.minimum( T.iround(dataLen * topRatio), selected_pred_truth_sorted.shape[0])
+
+				selected_sorted_truth = T.cast(selected_pred_truth_sorted[:, -1], 'int32')
+				numTruths = T.bincount(selected_sorted_truth, minlength=2 )
+				numCorrects = T.bincount( selected_sorted_truth[0:numTops], minlength=2 )
+				#numTops = T.minimum(numTops, numTruths[0])
+				accuracyList.append( T.stack( [numCorrects[0] *1./(numTops + 0.001), numTops, numTruths[0] ], axis=0)  )
+
+			return T.stacklists( accuracyList )
+
+		def TopAccuracyNormal(pred=None, truth=None, symmetric=True):
+			truth_new = T.ge(truth, config.ContactDefinition )
+			
+			if pred.ndim == 2:
+				pred_new = -pred.dimshuffle(0, 1, 'x')
+			else:
+				pred_new = -pred
+
+			return TopAccuracy2C(pred = pred_new, truth = truth_new, symmetric=symmetric)
+
+		def TopAccuracyLogNormal(pred=None, truth=None, symmetric=True):
+			truth_new = T.ge(truth, T.log(config.ContactDefinition) )
+			
+			if pred.ndim == 2:
+				pred_new = -pred.dimshuffle(0, 1, 'x')
+			else:
+				pred_new = -pred
+
+			return TopAccuracy2C(pred = pred_new, truth = truth_new, symmetric=symmetric)
+
+		## in this function, we assume that pred is tensor3 of float and truth is a matrix of int8 or int
+		## pred has shape (dataLen, dataLen, numLabels), having the predicted probability of each label
+		## truth has shape (dataLen, dataLen)
+		def TopAccuracyMultiC(pred=None, truth=None, subType=None, symmetric=True):
+			## convert pred and truth to 2C
+			distBins = config.distCutoffs[subType]
+			label8 = DistanceUtils.LabelsOfOneDistance(config.ContactDefinition, distBins)
+			label15 = DistanceUtils.LabelsOfOneDistance(config.InteractionLimit, distBins)
+			truth1 = T.cast( T.ge(truth, label8), 'int32')
+			truth_new = truth1
+			pred1 = T.sum(pred[:,:,:label8], axis=2, keepdims=True)
+			pred2 = T.sum(pred[:,:,label8:], axis=2, keepdims=True)
+			pred_new = T.concatenate( (pred1, pred2), axis=2)
+			return TopAccuracy2C(pred=pred_new, truth=truth_new, symmetric=symmetric)
+
+		##def EvaluateAccuracy(pred_prob, truth, pad_len, response):
+		def EvaluateAccuracy(pred_prob, truth, pad_len):
+			pred_in_correct_shape = T.cast( pred_prob[pad_len:, pad_len: ], dtype=theano.config.floatX)
+			truth_in_correct_shape = truth[pad_len:, pad_len: ]
+
+			labelType = Response2LabelType(currentResponse)
+			atomType = Response2LabelName(currentResponse)
+			symmetric = ( atomType in ['CaCa', 'CbCb', 'CgCg', 'Beta'] )
+
+			if labelType.startswith('LogNormal'):
+				return TopAccuracyLogNormal(pred=pred_in_correct_shape, truth=truth_in_correct_shape, symmetric=symmetric)
+			elif labelType.startswith('Normal'):
+				return TopAccuracyNormal(pred=pred_in_correct_shape, truth=truth_in_correct_shape, symmetric=symmetric)
+			elif labelType.startswith('Discrete'):
+				subType = labelType[len('Discrete'): ]
+				if subType.startswith('2C'):
+					return TopAccuracy2C(pred=pred_in_correct_shape, truth=truth_in_correct_shape, symmetric=symmetric)
+				else:
+					return TopAccuracyMultiC(pred=pred_in_correct_shape, truth=truth_in_correct_shape, subType=subType, symmetric=symmetric)
+			else:
+				print('unsupported label type in EvaluateAccuracy: ', labelType)
+				exit(-1)
 
 		accuracyList = []
 		for res, out_prob, z, ratio in zip(self.responses, self.output_probList, zList, self.modelSpecs['topRatios'] ):
@@ -662,7 +664,6 @@ def TestResNet4DistMatrix():
 	ymask = T.btensor3('ymask')
 	selection = T.wtensor3('selection')
 
-	import cPickle
 	fh = open('seqDataset4HF.pkl')
 	data = cPickle.load(fh)
 	fh.close()

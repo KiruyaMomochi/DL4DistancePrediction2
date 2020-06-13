@@ -7,6 +7,7 @@ Reference:
 import numpy as np
 import theano
 import theano.tensor as T
+import matplotlib.pyplot as plt
 
 def make_func(x, cost, updates, init_x):
     x.set_value(init_x)
@@ -22,7 +23,7 @@ def simulate(f, n_epoch_max = 100):
     tolorate = 0.001
     used_epochs = 0
     xs = []
-    print "##################"
+    print("##################")
     while epoch < n_epoch_max:
         x_val, cost_val = f()
         xs.append(x_val)
@@ -213,8 +214,6 @@ def Nesterov(params, param_grads, momentum=0.90, lr=0.01):
         return updates, param_updates
 
 
-from matplotlib import pyplot  as plt
-
 def myplot(data, style, title, plot_number, total):
     plt.subplot(1,total,plot_number)
     x, y = zip(*data)
@@ -247,17 +246,17 @@ def testGDVariants():
 
     param_grads = [T.grad(cost, param) for param in params]
 
-    print "Using AdaDelta with rho = %f and epsilon = %f" %(rho, epsilon)
+    print("Using AdaDelta with rho = %f and epsilon = %f" %(rho, epsilon))
     adadelta_updates=AdaDelta(params, param_shapes, param_grads, rho, epsilon)
     f = make_func(x, cost, adadelta_updates, init_x)
     adadelta_xs, adadelta_epochs = simulate(f)
 
-    print "Using AdaGrad with gamma = %f and epsilon = %f" %(gamma, epsilon)
+    print("Using AdaGrad with gamma = %f and epsilon = %f" %(gamma, epsilon))
     adagrad_updates = AdaGrad(params, param_shapes, param_grads, gamma, epsilon)
     f = make_func(x, cost, adagrad_updates, init_x)
     adagrad_xs, adagrad_epochs = simulate(f)
 
-    print "Using constant learning rate %f" %(const_lr)
+    print("Using constant learning rate %f" %(const_lr))
     GD_updates=GD(params, param_grads, const_lr)
     f = make_func(x, cost, GD_updates, init_x)
     const_lr_xs, const_lr_epochs = simulate(f)

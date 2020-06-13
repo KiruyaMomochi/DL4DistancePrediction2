@@ -91,10 +91,10 @@ distCutoffs_HB['2CPlus'] = distCutoffs_HB['2C']
 
 #the true repsonse is the combination of one element in allLabelNames and one element in allLabelTypes
 def Response2LabelType(response):
-        return response.split('_')[1]
+    return response.split('_')[1]
 
 def Response2LabelName(response):
-        return response.split('_')[0]
+    return response.split('_')[0]
 
 def ParseResponse(response):
     return response.split('_')
@@ -142,16 +142,16 @@ RangeBoundaries = [ 24, 12, 6, 2]
 numRanges = len(RangeBoundaries)
 
 def GetRangeIndex(offset):
-        if offset < RangeBoundaries[-1]:
-                return -1
+    if offset < RangeBoundaries[-1]:
+        return -1
 
-        rangeIndex = 0
-        for l in range(numRanges):
-                if offset >= RangeBoundaries[l]:
-                        break
-                else:
-                        rangeIndex += 1
-        return rangeIndex
+    rangeIndex = 0
+    for l in range(numRanges):
+        if offset >= RangeBoundaries[l]:
+            break
+        else:
+            rangeIndex += 1
+    return rangeIndex
 
 weight4range = np.array([ 3., 2.5, 1., 0.5]).reshape((-1,1)).astype(np.float32)
 
@@ -257,7 +257,6 @@ def InitializeModelSpecs():
 
     return modelSpecs
 
-
 def SelectCG(AA):
     a2 = 'cg'
     if AA == 'V' or AA == 'I':
@@ -276,29 +275,28 @@ def SelectCG(AA):
 
 def SelectAtomPair(sequence, i, j, atomPairType):
 
-        if atomPairType == 'CaCa':
-                return 'ca', 'ca'
-        if atomPairType == 'NO':
-                return 'N', 'O'
+    if atomPairType == 'CaCa':
+        return 'ca', 'ca'
+    if atomPairType == 'NO':
+        return 'N', 'O'
 
-        if atomPairType == 'CbCb':
-                a1, a2 = 'cb', 'cb'
-                if sequence[i] == 'G':
-                        a1 = 'ca'
-                if sequence[j] == 'G':
-                        a2 = 'ca'
-                return a1, a2
+    if atomPairType == 'CbCb':
+        a1, a2 = 'cb', 'cb'
+        if sequence[i] == 'G':
+            a1 = 'ca'
+        if sequence[j] == 'G':
+            a2 = 'ca'
+        return a1, a2
 
-        if atomPairType == 'CaCg':
-                a1 = 'ca'
-                a2 = SelectCG(sequence[j].upper())
-                return a1, a2
+    if atomPairType == 'CaCg':
+        a1 = 'ca'
+        a2 = SelectCG(sequence[j].upper())
+        return a1, a2
 
-        if atomPairType == 'CgCg':
-                a1 = SelectCG(sequence[i].upper())
-                a2 = SelectCG(sequence[j].upper())
-                return a1, a2
-
+    if atomPairType == 'CgCg':
+        a1 = SelectCG(sequence[i].upper())
+        a2 = SelectCG(sequence[j].upper())
+        return a1, a2
 
 def EmbeddingUsed(modelSpecs):
     if 'seq2matrixMode' not in modelSpecs:

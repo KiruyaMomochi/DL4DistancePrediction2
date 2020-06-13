@@ -125,7 +125,7 @@ class NN4Normal(object):
 		n_out_in_last_layer = n_in
 
 		## add hidden layers
-		for i in xrange(len(n_hiddens)):
+		for i in range(len(n_hiddens)):
 			hiddenLayer = HiddenLayer( rng = rng, input = output_in_last_layer, n_in = n_out_in_last_layer, n_out = n_hiddens[i], activation = T.nnet.relu )
 			self.hlayers.append(hiddenLayer)
 			output_in_last_layer = hiddenLayer.output

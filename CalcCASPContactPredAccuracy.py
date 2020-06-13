@@ -7,8 +7,8 @@ import ContactUtils
 if __name__ == "__main__":
 
 	if len(sys.argv) != 3:
-    		print 'python CalcCASPContactPredAccuracy.py pred_CASP_file nativeDistMatrixFilePKL'
-    		exit(-1)
+		print('python CalcCASPContactPredAccuracy.py pred_CASP_file nativeDistMatrixFilePKL')
+		exit(-1)
 
 	predFile = sys.argv[1]
 	distFile = sys.argv[2]
@@ -20,6 +20,4 @@ if __name__ == "__main__":
 	accsStr = [ str(a) for a in accs ]
 	resultStr = target + ' ' + str(pred.shape[0]) + ' TopAcc '
 	resultStr += (' '.join(accsStr) )
-	print resultStr
-
-
+	print(resultStr)

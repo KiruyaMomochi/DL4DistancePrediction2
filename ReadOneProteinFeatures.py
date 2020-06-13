@@ -1,5 +1,5 @@
 import numpy as np
-import cPickle
+import pickle as cPickle
 import sys
 import os
 sys.path.append(os.path.join(os.environ['ModelingHome'], 'Common'))

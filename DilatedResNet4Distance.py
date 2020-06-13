@@ -1,6 +1,8 @@
 import numpy as np
 import theano
 import theano.tensor as T
+import sys
+from ResNet4Distance import ResNet
 
 ##a new implementation of 1D convolution 
 class ResConv1DLayer(object):
@@ -256,7 +258,7 @@ def TestBatchNorm3D():
 	container = np.zeros( (batchSize, n_in, maxSeqLen), dtype=np.float32 )
 	masks = np.zeros( (batchSize, maxSeqLen - minSeqLen), dtype=np.float32 )
 
-	for i in xrange(batchSize):
+	for i in range(batchSize):
 		nRows = np.random.randint(minSeqLen, maxSeqLen)
 		nCols = nRows
 		a = np.random.uniform(0, 2, (n_in, nCols))
@@ -291,7 +293,7 @@ def TestBatchNorm3D():
 	f = theano.function([x, mask], y)
 	c = f(container, masks)
 
-	for i in xrange(batchSize):
+	for i in range(batchSize):
 		a = newmatrices[i]
 		c_sub = c[i][:, c[i].shape[1]-a.shape[1]: ]
 		c[i][:, c[i].shape[1]-a.shape[1]: ] = c_sub - a
@@ -309,7 +311,7 @@ def TestBatchNorm4D():
 	container = np.zeros( (batchSize, n_in, maxSeqLen, maxSeqLen), dtype=np.float32 )
 	masks = np.zeros( (batchSize, maxSeqLen  - minSeqLen, maxSeqLen), dtype=np.float32 )
 
-	for i in xrange(batchSize):
+	for i in range(batchSize):
 		nRows = np.random.randint(minSeqLen, maxSeqLen)
 		nCols = nRows
 		a = np.random.uniform(0, 6, (n_in, nRows, nCols))
@@ -343,7 +345,7 @@ def TestBatchNorm4D():
 	f = theano.function([x, mask], y)
 	c = f(container, masks)
 
-	for i in xrange(batchSize):
+	for i in range(batchSize):
 		a = newmatrices[i]
 		#print a
 		c_sub = c[i][:, c[i].shape[1]-a.shape[1]:, c[i].shape[2]-a.shape[2]: ]
@@ -1023,7 +1025,6 @@ class DilatedResNet:
 
 def TestConvLayers():
 	from Conv1d import Conv1DLayer
-	from Conv2d import Conv2DLayer
 
 	rng = np.random.RandomState()
 	n_in = 3
@@ -1110,7 +1111,7 @@ def TestResNet():
 	updates = [ (p, p - 0.03 * g) for p, g in zip(params, gparams) ]
 	train = theano.function([x, m], [cost, loss, paramL2], updates=updates)
 
-	for i in xrange(1500):
+	for i in range(1500):
 		c, los, l2 = train(a, m_value)
 		print(c, los, l2)
 

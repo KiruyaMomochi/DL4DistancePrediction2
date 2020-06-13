@@ -12,7 +12,7 @@ import theano
 import theano.tensor as T
 
 from Optimizers import AdaGrad, AdaDelta, SGDMomentum, GD
-#from HF.hf import SequenceDataset, hf_optimizer
+from theano_hf import SequenceDataset, hf_optimizer
 from LogReg import LogisticRegression as LogReg
 
 # start-snippet-1
@@ -125,7 +125,7 @@ class MLLogReg(object):
         output_in_last_layer = input
         n_out_in_last_layer = n_in
 
-        for i in xrange(len(n_hiddens)):
+        for i in range(len(n_hiddens)):
 
             ## add one hidden layer
             hiddenLayer = HiddenLayer(
@@ -243,7 +243,7 @@ def testMLLogReg(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=2000, 
 
     hf_optimizer(regressor.params, [x,y], regressor.linLayer.pre_act, [cost, regressor.errors(y)]).train(gradient_dataset, cg_dataset, initial_lambda=1.0, preconditioner=True, num_updates=100, patience=10, validation=valid_dataset)
 
-    print test(testX, testY)
+    print(test(testX, testY))
 
 if __name__ == '__main__':
     testMLLogReg()
