@@ -215,37 +215,37 @@ class LogisticRegression(object):
     ## calculate the confusion matrix of the prediction 
     def confusionMatrix(self, y):
 
-	def confusionMatrix3C(pred=None, truth=None):
-	    labelcount = T.bincount(truth, minlength=3)
-	    truth_pred = truth * 3 + pred
-	    count = T.bincount(truth_pred, minlength=9).reshape((3, 3))
-	    count_norm = count /(1. * truth.shape[0] )
+        def confusionMatrix3C(pred=None, truth=None):
+            labelcount = T.bincount(truth, minlength=3)
+            truth_pred = truth * 3 + pred
+            count = T.bincount(truth_pred, minlength=9).reshape((3, 3))
+            count_norm = count /(1. * truth.shape[0] )
 
-	    return count_norm
+            return count_norm
 
-	if self.n_out == 3:
-	    ##truth shall be casted to at least int32
-	    truth = T.cast(y, 'int32')
-	    return confusionMatrix3C(self.y_pred, truth)
+        if self.n_out == 3:
+            ##truth shall be casted to at least int32
+            truth = T.cast(y, 'int32')
+            return confusionMatrix3C(self.y_pred, truth)
 
-	if self.n_out == 12:
-	    ## convert the 12-label system to the 3-label system
-	    ## 0, 1, 2, 3 to 0; 4,5,6,7,8,9,10 to 1; and 11 to 2
-	    y1 = T.zeros_like(y)
-	    y2 = T.gt(y, 3)
-	    y3 = T.gt(y, 10)
-	    truth = T.cast(y1 + y2 + y3, 'int32')
+        if self.n_out == 12:
+            ## convert the 12-label system to the 3-label system
+            ## 0, 1, 2, 3 to 0; 4,5,6,7,8,9,10 to 1; and 11 to 2
+            y1 = T.zeros_like(y)
+            y2 = T.gt(y, 3)
+            y3 = T.gt(y, 10)
+            truth = T.cast(y1 + y2 + y3, 'int32')
 
-	    pred1 = T.zeros_like(self.y_pred)
-	    pred2 = T.gt(self.y_pred, 3)
-	    pred3 = T.gt(self.y_pred, 10)
-	    pred = T.cast( y1 + y2 + y3, 'int32')
+            pred1 = T.zeros_like(self.y_pred)
+            pred2 = T.gt(self.y_pred, 3)
+            pred3 = T.gt(self.y_pred, 10)
+            pred = T.cast( y1 + y2 + y3, 'int32')
 
-	    return confusionMatrix3C(pred, truth)
-            
-	else:
-	    print('this function only works when n_out is either 3 or 12')
-	    sys.exit(-1)
+            return confusionMatrix3C(pred, truth)
+                
+        else:
+            print('this function only works when n_out is either 3 or 12')
+            sys.exit(-1)
 
 def load_data(dataset):
     ''' Loads the dataset

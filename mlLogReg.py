@@ -36,11 +36,11 @@ class HiddenLayer(object):
 
         :type n_in: int
         :param n_in: dimensionality of input
-	self.n_in = n_in
+    self.n_in = n_in
 
         :type n_out: int
         :param n_out: number of hidden units
-	self.n_out = n_out
+    self.n_out = n_out
 
         :type activation: theano.Op or function
         :param activation: Non linearity to be applied in the hidden
@@ -102,7 +102,7 @@ class MLLogReg(object):
 
         :type rng: numpy.random.RandomState
         :param rng: a random number generator used to initialize weights
-	
+    
         input has shape (batchSize, n_in)
         n_in is the number of input features
         n_out is the number of classes (or labels)
@@ -135,14 +135,14 @@ class MLLogReg(object):
                 n_out = n_hiddens[i],
                 activation = T.tanh
             ) 
-            	
-	    self.paramL1 += hiddenLayer.paramL1
-            self.paramL2 += hiddenLayer.paramL2
-            self.params += hiddenLayer.params
-            self.hlayers.append(hiddenLayer)
+                
+        self.paramL1 += hiddenLayer.paramL1
+        self.paramL2 += hiddenLayer.paramL2
+        self.params += hiddenLayer.params
+        self.hlayers.append(hiddenLayer)
 
-            output_in_last_layer = hiddenLayer.output
-            n_out_in_last_layer = n_hiddens[i]
+        output_in_last_layer = hiddenLayer.output
+        n_out_in_last_layer = n_hiddens[i]
 
 
         ## add the final logistic regression layer
@@ -168,10 +168,7 @@ class MLLogReg(object):
     def loss(self, y, sampleWeight=None):
         return negative_log_likelihood(y, sampleWeight)
 
-
-
 def testMLLogReg(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=2000, n_hiddens=[50,25], trainData=None, testData=None):
-
     ## generate some random train and test data
     trainX = numpy.random.uniform(0, 1, (10000, 20)).astype(numpy.float32)
     trainXsum = numpy.sum(trainX**2, axis=1)
