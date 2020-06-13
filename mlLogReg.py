@@ -11,7 +11,7 @@ import numpy
 import theano
 import theano.tensor as T
 
-from Optimizers import AdaGrad, AdaDelta, SGDMomentum, GD
+from Optimizers import AdaGrad, AdaDelta, GD
 from theano_hf import SequenceDataset, hf_optimizer
 from LogReg import LogisticRegression as LogReg
 
@@ -103,9 +103,9 @@ class MLLogReg(object):
         :type rng: numpy.random.RandomState
         :param rng: a random number generator used to initialize weights
 	
-	input has shape (batchSize, n_in)
-	n_in is the number of input features
-	n_out is the number of classes (or labels)
+        input has shape (batchSize, n_in)
+        n_in is the number of input features
+        n_out is the number of classes (or labels)
 
         :type n_hidden: int
         :param n_hidden: a tuple defining the number of hidden units at each hidden layer
@@ -145,25 +145,25 @@ class MLLogReg(object):
             n_out_in_last_layer = n_hiddens[i]
 
 
-	## add the final logistic regression layer
+        ## add the final logistic regression layer
         linLayer = LogReg(output_in_last_layer, n_out_in_last_layer, n_out)
-	self.linLayer = linLayer
-	self.paramL1 += linLayer.paramL1
+        self.linLayer = linLayer
+        self.paramL1 += linLayer.paramL1
         self.paramL2 += linLayer.paramL2
         self.params += linLayer.params
 
-	self.pre_act = linLayer.pre_act
-	self.p_y_given_x = linLayer.p_y_given_x
-	self.y_pred = linLayer.y_pred
+        self.pre_act = linLayer.pre_act
+        self.p_y_given_x = linLayer.p_y_given_x
+        self.y_pred = linLayer.y_pred
 
         self.output = self.y_pred
-	self.n_out = n_out
+        self.n_out = n_out
 
     def negative_log_likelihood(self, y, sampleWeight=None):
         return self.linLayer.negative_log_likelihood(y, sampleWeight)
 
     def errors(self, y, sampleWeight=None):
-	return self.linLayer.errors(y, sampleWeight)
+        return self.linLayer.errors(y, sampleWeight)
 
     def loss(self, y, sampleWeight=None):
         return negative_log_likelihood(y, sampleWeight)

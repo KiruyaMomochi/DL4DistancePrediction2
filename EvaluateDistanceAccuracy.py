@@ -12,7 +12,6 @@ import DistanceUtils
 import getopt
 
 def Usage():
-
 	print('python EvaluateDistanceAccuracy.py bound_PKL ground_truth_PKL')
 	print('  This script evaluate distance bound accuracy for a protein in its predicted bound matrix file ')
 	print('  bound_PKL: a predicted distance bound file with name like XXX.bound.pkl')
@@ -47,7 +46,7 @@ def main(argv):
 
 	newPred = pred[0]
 	newPred['seq'] = pred[2]
-        acc = DistanceUtils.EvaluateDistanceBoundAccuracy(pred[0], native)
+	acc = DistanceUtils.EvaluateDistanceBoundAccuracy(pred[0], native)
 
 	target = os.path.basename(nativeFile)
 	for apt, value in acc.iteritems():

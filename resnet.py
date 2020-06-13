@@ -3,7 +3,7 @@ import math
 import numpy
 import theano
 import theano.tensor as tensor
-from theano.tensor.signal import downsample
+from theano.tensor.signal import pool
 
 def relu(x, x_shape):
     return tensor.nnet.relu(x), x_shape, []
@@ -80,7 +80,7 @@ def build_resnet(x, x_shape, features = 64):
     y11, y11_shape, p11 = resnet_bottleneck(y10, y10_shape, features)
 
     #8x8 average pooling 
-    y12 = downsample.max_pool_2d(y11, (8,8), mode="average_inc_pad", ignore_border=True)
+    y12 = pool.pool_2d(y11, (8,8), mode="average_inc_pad", ignore_border=True)
     y12_shape=(y11_shape[0], y11_shape[1],1,1)
     
     #regression layer (log-softmax)

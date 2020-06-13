@@ -197,21 +197,21 @@ def SGDM2(params, param_grads, momentum=0.90, lr=0.01):
 
 ## SGD momentum with Nesterov acceleration
 def Nesterov(params, param_grads, momentum=0.90, lr=0.01):
-    	assert momentum < 1 and momentum >= 0
-	updates = []
+   	assert momentum < 1 and momentum >= 0
+    updates = []
 	param_updates = []
 
 	for param, param_grad in zip(params, param_grads):
-        	param_update = theano.shared(value=np.zeros(param.shape.eval(),dtype=theano.config.floatX), borrow=True)
-        	param_updates.append(param_update)
+        param_update = theano.shared(value=np.zeros(param.shape.eval(),dtype=theano.config.floatX), borrow=True)
+        param_updates.append(param_update)
 
-            	update = momentum * param_update - lr * param_grad
-            	update2 = momentum * momentum * param_update -  momentum * lr * param_grad - lr * param_grad
+        update = momentum * param_update - lr * param_grad
+        update2 = momentum * momentum * param_update -  momentum * lr * param_grad - lr * param_grad
 
-            	updates.append((param_update, update))
-            	updates.append((param, param + update2))
+        updates.append((param_update, update))
+        updates.append((param, param + update2))
 
-        return updates, param_updates
+    return updates, param_updates
 
 
 def myplot(data, style, title, plot_number, total):

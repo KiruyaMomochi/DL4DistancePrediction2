@@ -898,7 +898,7 @@ class ResNet:
 
 def TestConvLayers():
 	from Conv1d import Conv1DLayer
-	from Conv2d import Conv2DLayer
+	# from Conv2d import Conv2DLayer
 
 	rng = np.random.RandomState()
 	n_in = 3

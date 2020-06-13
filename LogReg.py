@@ -72,12 +72,12 @@ class LogisticRegression(object):
                       which the labels lie
 
         """
-	self.n_in = n_in
-	self.n_out = n_out
+        self.n_in = n_in
+        self.n_out = n_out
 
         # initialize with 0 the weights W as a matrix of shape (n_in, n_out)
-	value_bound = numpy.sqrt(6. /(n_in + n_out))
-	W_values = numpy.asarray(numpy.random.uniform( low = - value_bound, high = value_bound, size=(n_in, n_out) ), dtype=theano.config.floatX)
+        value_bound = numpy.sqrt(6. /(n_in + n_out))
+        W_values = numpy.asarray(numpy.random.uniform( low = - value_bound, high = value_bound, size=(n_in, n_out) ), dtype=theano.config.floatX)
         self.W = theano.shared (value = W_values, name ='LogReg_W', borrow=True)
         
         # initialize the baises b as a vector of n_out 0s
@@ -107,8 +107,8 @@ class LogisticRegression(object):
         # parameters of the model
         self.params = [self.W, self.b]
 
-	self.paramL1 = abs(self.W).sum() + abs(self.b).sum()
-	self.paramL2 = (self.W**2).sum() + (self.b**2).sum()
+        self.paramL1 = abs(self.W).sum() + abs(self.b).sum()
+        self.paramL2 = (self.W**2).sum() + (self.b**2).sum()
 
     #def negative_log_likelihood(self, y, sampleWeight=None, labelWeight=None):
     def negative_log_likelihood(self, y, sampleWeight=None):
@@ -143,7 +143,7 @@ class LogisticRegression(object):
 
         if sampleWeight is not None:
             return -T.sum(T.mul(sampleWeight, T.log(self.p_y_given_x)[T.arange(y.shape[0]), y] ) )/T.sum(sampleWeight)
-	else:
+        else:
             return -T.mean(T.log(self.p_y_given_x)[T.arange(y.shape[0]), y])
 
         # end-snippet-2
@@ -169,9 +169,9 @@ class LogisticRegression(object):
         if y.dtype.startswith('int'):
             # the T.neq operator returns a vector of 0s and 1s, where 1
             # represents a mistake in prediction
-	    if sampleWeight is not None:
-		return T.sum( T.mul(sampleWeight, T.neq(self.y_pred, y) ) ) * 1./T.sum(sampleWeight)
-	    else:
+            if sampleWeight is not None:
+                return T.sum( T.mul(sampleWeight, T.neq(self.y_pred, y) ) ) * 1./T.sum(sampleWeight)
+            else:
                 return T.mean(T.neq(self.y_pred, y))
         else:
             raise NotImplementedError()
@@ -179,39 +179,38 @@ class LogisticRegression(object):
     ## T.bincount is a weird function. Its return value has the same type as the dtype of the elements in the array to be counted.
     ##calculate the classification errors for each of the three categories
     def errorsBreakdown(self, y):
-	
-	##truth shall be casted to at least int32
-	def breakDown3C(pred=None, truth=None):
-	    labelcount = T.bincount(truth, minlength=3)
+        ##truth shall be casted to at least int32
+        def breakDown3C(pred=None, truth=None):
+            labelcount = T.bincount(truth, minlength=3)
             err = T.neq(pred, truth)
             truth_with_wrong_pred = truth[err.nonzero()]
-	    errcount = T.bincount(truth_with_wrong_pred, minlength=3)
+            errcount = T.bincount(truth_with_wrong_pred, minlength=3)
 
-	    ## use 0.0001 to avoid division by 0
+            ## use 0.0001 to avoid division by 0
             return T.mul(errcount, 1./(labelcount + 0.0001) )
 
-	if self.n_out == 3:
-	    truth = T.cast(y, 'int32')
-	    return breakDown3C(self.y_pred, truth)
+        if self.n_out == 3:
+            truth = T.cast(y, 'int32')
+            return breakDown3C(self.y_pred, truth)
 
-	if self.n_out == 12:
-	    ## convert the 12-label system to the 3-label system
-	    ## 0, 1, 2, 3 to 0; 4,5,6,7,8,9,10 to 1; and 11 to 2
-	    y1 = T.zeros_like(y)
-	    y2 = T.gt(y, 3)
-	    y3 = T.gt(y, 10)
-	    truth = T.cast(y1 + y2 + y3, 'int32')
+        if self.n_out == 12:
+            ## convert the 12-label system to the 3-label system
+            ## 0, 1, 2, 3 to 0; 4,5,6,7,8,9,10 to 1; and 11 to 2
+            y1 = T.zeros_like(y)
+            y2 = T.gt(y, 3)
+            y3 = T.gt(y, 10)
+            truth = T.cast(y1 + y2 + y3, 'int32')
 
-	    pred1 = T.zeros_like(self.y_pred)
-	    pred2 = T.gt(self.y_pred, 3)
-	    pred3 = T.gt(self.y_pred, 10)
-	    pred = T.cast( y1 + y2 + y3, 'int32')
+            pred1 = T.zeros_like(self.y_pred)
+            pred2 = T.gt(self.y_pred, 3)
+            pred3 = T.gt(self.y_pred, 10)
+            pred = T.cast( y1 + y2 + y3, 'int32')
 
-	    return breakDown3C(pred, truth)
-            
-	else:
-	    print('this function only works when n_out is either 3 or 12')
-	    sys.exit(-1)
+            return breakDown3C(pred, truth)
+                
+        else:
+            print('this function only works when n_out is either 3 or 12')
+            sys.exit(-1)
 
     ## calculate the confusion matrix of the prediction 
     def confusionMatrix(self, y):
