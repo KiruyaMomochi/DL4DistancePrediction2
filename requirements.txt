@@ -1,0 +1,3 @@
+theano
+theano-hf
+numpy
